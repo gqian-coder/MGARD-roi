@@ -1,0 +1,13 @@
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/CMakeFiles/edit_cache.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/CMakeFiles/rebuild_cache.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/CMakeFiles/list_install_components.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/CMakeFiles/install.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/CMakeFiles/install/local.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/CMakeFiles/install/strip.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src/CMakeFiles/nvcomp.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src/CMakeFiles/edit_cache.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src/CMakeFiles/rebuild_cache.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src/CMakeFiles/list_install_components.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src/CMakeFiles/install.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src/CMakeFiles/install/local.dir
+/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src/CMakeFiles/install/strip.dir

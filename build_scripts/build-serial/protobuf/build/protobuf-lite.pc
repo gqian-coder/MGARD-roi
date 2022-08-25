@@ -1,0 +1,11 @@
+prefix=/home/qian/Software/MGARD-adaptive/build_scripts/install-serial
+exec_prefix=/home/qian/Software/MGARD-adaptive/build_scripts/install-serial
+libdir=/home/qian/Software/MGARD-adaptive/build_scripts/install-serial/lib
+includedir=/home/qian/Software/MGARD-adaptive/build_scripts/install-serial/include
+
+Name: Protocol Buffers
+Description: Google's Data Interchange Format
+Version: 3.19.4.0
+Libs: -L${libdir} -lprotobuf-lite -lpthread
+Cflags: -I${includedir}
+Conflicts: protobuf

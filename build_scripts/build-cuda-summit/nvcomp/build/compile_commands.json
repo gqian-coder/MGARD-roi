@@ -1,0 +1,137 @@
+[
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/BitPackGPU.cu -o CMakeFiles/nvcomp.dir/BitPackGPU.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/BitPackGPU.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/CudaUtils.cu -o CMakeFiles/nvcomp.dir/CudaUtils.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/CudaUtils.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/DeltaGPU.cu -o CMakeFiles/nvcomp.dir/DeltaGPU.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/DeltaGPU.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/RunLengthEncodeGPU.cu -o CMakeFiles/nvcomp.dir/RunLengthEncodeGPU.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/RunLengthEncodeGPU.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/BitcompManager.cu -o CMakeFiles/nvcomp.dir/highlevel/BitcompManager.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/BitcompManager.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/CascadedHlifKernels.cu -o CMakeFiles/nvcomp.dir/highlevel/CascadedHlifKernels.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/CascadedHlifKernels.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/LZ4HlifKernels.cu -o CMakeFiles/nvcomp.dir/highlevel/LZ4HlifKernels.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/LZ4HlifKernels.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/SnappyHlifKernels.cu -o CMakeFiles/nvcomp.dir/highlevel/SnappyHlifKernels.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/SnappyHlifKernels.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/BitcompBatch.cu -o CMakeFiles/nvcomp.dir/lowlevel/BitcompBatch.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/BitcompBatch.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/CascadedBatch.cu -o CMakeFiles/nvcomp.dir/lowlevel/CascadedBatch.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/CascadedBatch.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/LZ4CompressionKernels.cu -o CMakeFiles/nvcomp.dir/lowlevel/LZ4CompressionKernels.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/LZ4CompressionKernels.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/SnappyBatchKernels.cu -o CMakeFiles/nvcomp.dir/lowlevel/SnappyBatchKernels.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/SnappyBatchKernels.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/local/cuda-11/bin/nvcc -forward-unknown-to-host-compiler -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include  --generate-code=arch=compute_60,code=[compute_60,sm_60] --generate-code=arch=compute_70,code=[sm_70] --generate-code=arch=compute_75,code=[sm_75] --generate-code=arch=compute_80,code=[compute_80,sm_80] -Xcompiler=-fPIC --expt-extended-lambda -x cu -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/gdeflateKernels.cu -o CMakeFiles/nvcomp.dir/lowlevel/gdeflateKernels.cu.o",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/gdeflateKernels.cu"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/Check.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/Check.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/Check.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/TempSpaceBroker.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/TempSpaceBroker.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/TempSpaceBroker.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/highlevel/ANSManager.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/ANSManager.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/ANSManager.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/highlevel/CascadedManager.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/CascadedManager.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/CascadedManager.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/highlevel/CompressionConfigs.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/CompressionConfigs.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/CompressionConfigs.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/highlevel/GdeflateManager.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/GdeflateManager.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/GdeflateManager.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/highlevel/LZ4Manager.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/LZ4Manager.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/LZ4Manager.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/highlevel/SnappyManager.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/SnappyManager.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/SnappyManager.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/highlevel/nvcompManagerFactory.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/nvcompManagerFactory.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/highlevel/nvcompManagerFactory.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/lowlevel/LZ4Batch.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/LZ4Batch.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/LZ4Batch.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/lowlevel/SnappyBatch.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/SnappyBatch.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/SnappyBatch.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/lowlevel/ansBatch.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/ansBatch.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/ansBatch.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/lowlevel/gdeflateBatch.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/gdeflateBatch.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/lowlevel/gdeflateBatch.cpp"
+},
+{
+  "directory": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/build/src",
+  "command": "/usr/bin/c++ -Dnvcomp_EXPORTS -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/include -I/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src -I/usr/local/cuda-11/include -O3 -DNDEBUG -O3 -fPIC -o CMakeFiles/nvcomp.dir/nvcomp_api.cpp.o -c /home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/nvcomp_api.cpp",
+  "file": "/home/qian/Software/MGARD/build_scripts/build-cuda-summit/nvcomp/src/src/nvcomp_api.cpp"
+}
+]

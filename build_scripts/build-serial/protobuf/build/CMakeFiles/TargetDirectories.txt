@@ -1,0 +1,17 @@
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/libprotobuf-lite.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/libprotobuf.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/libprotoc.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/protoc.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/gmock.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/gmock_main.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/tests.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/test_plugin.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/lite-test.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/lite-arena-test.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/check.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/edit_cache.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/rebuild_cache.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/list_install_components.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/install.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/install/local.dir
+/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/build/CMakeFiles/install/strip.dir

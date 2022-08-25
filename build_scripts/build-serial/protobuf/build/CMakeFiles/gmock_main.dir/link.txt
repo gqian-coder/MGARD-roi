@@ -1,0 +1,2 @@
+/usr/bin/ar qc libgmock_main.a CMakeFiles/gmock_main.dir/home/qian/Software/MGARD-adaptive/build_scripts/build-serial/protobuf/src/third_party/googletest/googlemock/src/gmock_main.cc.o
+/usr/bin/ranlib libgmock_main.a
