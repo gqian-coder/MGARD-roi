@@ -19,6 +19,7 @@
 #endif
 
 #include "compress_x.hpp"
+#include "adaptive_roi.hpp"
 
 //! Implementation of the MGARD compression and decompression algorithms.
 namespace mgard {
@@ -39,9 +40,9 @@ compress(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v,
 template <std::size_t N, typename Real>
 CompressedDataset<N, Real>
 compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const Real s,
-        const Real tolerance, const std::vector<Real> thresh, const size_t bin_max,
-        const std::vector<size_t> ratio_bin, const size_t l_th,
-        const char* filename, bool wr);
+        const Real tolerance, const std::vector<Real> thresh,
+        const std::vector<size_t> init_bw, const std::vector<size_t>bw_ratio,
+        const size_t l_th, const char* filename, bool wr);
 
 //! Decompress a function on a tensor product grid.
 //!

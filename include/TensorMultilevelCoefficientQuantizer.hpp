@@ -27,11 +27,6 @@ public:
       const TensorMeshHierarchy<N, Real> &hierarchy, const Real s,
       const Real tolerance);
 
-  // QG: adaptive
-  TensorMultilevelCoefficientQuantizer(
-      const TensorMeshHierarchy<N, Real> &hierarchy, const Real s,
-      const Real tolerance, const size_t scalar);
-
   //! Quantize a multilevel coefficient.
   //!
   //! IMPORTANT: `node` must be produced by iterating over the mesh which first
@@ -42,8 +37,6 @@ public:
   //!\param coefficient Multilevel coefficient to be quantized.
 
   Int operator()(const TensorNode<N> node, const Real coefficient) const;
-  // QG: adaptive
-  Int operator()(const TensorNode<N> node, const Real coefficient, const Real coeff_map) const;
 
   //! Iterator used to traverse a quantized range. Note that the iterator is not
   //! used to iterate over the `TensorMultilevelCoefficientQuantizer` itself.
@@ -62,9 +55,6 @@ public:
 
   //! Global quantization error tolerance.
   const Real tolerance;
-
-  //QG: Scalar -- scalar*tolerance for coefficients that are smaller than thresh
-  std::size_t scalar;
 
 private:
   //! Nodes of the finest mesh in the hierarchy.
@@ -131,6 +121,103 @@ public:
 private:
   //! Associated multilevel coefficient quantizer;
   const TensorMultilevelCoefficientQuantizer &quantizer;
+
+  //! Iterator to current node.
+  typename ShuffledTensorNodeRange<N, Real>::iterator inner_node;
+
+  //! Iterator to current coefficient.
+  Real const *inner_coeff;
+
+};
+
+template <std::size_t N, typename Real, typename Int>
+class TensorMultilevelCoefficientAdpQuantizer {
+public:
+  TensorMultilevelCoefficientAdpQuantizer(
+      const TensorMeshHierarchy<N, Real> &hierarchy, const Real s,
+      const Real tolerance, const size_t scalar);
+
+  // QG: roi-adaptive
+  Int operator()(const TensorNode<N> node, const Real coefficient, const Real coeff_map) const;
+
+  //! Iterator used to traverse a quantized range. Note that the iterator is not
+  //! used to iterate over the `TensorMultilevelCoefficientQuantizer` itself.
+  class iterator;
+
+  //! Quantize a set of multilevel coefficients.
+  //!
+  RangeSlice<iterator> operator()(Real const *const u, Real const *const u_map) const;
+
+  //! Associated mesh hierarchy.
+  const TensorMeshHierarchy<N, Real> &hierarchy;
+
+  //! Smoothness parameter.
+  const Real s;
+
+  //! Global quantization error tolerance.
+  const Real tolerance;
+
+  //QG: Scalar -- scalar*tolerance for coefficients that are smaller than thresh
+  std::size_t scalar;
+
+private:
+  //! Nodes of the finest mesh in the hierarchy.
+  const ShuffledTensorNodeRange<N, Real> nodes;
+
+  //! Quantizer to use when controlling error in the supremum norm.
+  const LinearQuantizer<Real, Int> supremum_quantizer;
+};
+
+//! Equality comparison.
+template <std::size_t N, typename Real, typename Int>
+bool operator==(const TensorMultilevelCoefficientAdpQuantizer<N, Real, Int> &a,
+                const TensorMultilevelCoefficientAdpQuantizer<N, Real, Int> &b);
+
+//! Inequality comparison.
+template <std::size_t N, typename Real, typename Int>
+bool operator!=(const TensorMultilevelCoefficientAdpQuantizer<N, Real, Int> &a,
+                const TensorMultilevelCoefficientAdpQuantizer<N, Real, Int> &b);
+
+//! Iterator used to traverse a range of multilevel coefficients, quantizing as
+//! it is dereferenced.
+template <std::size_t N, typename Real, typename Int>
+class TensorMultilevelCoefficientAdpQuantizer<N, Real, Int>::iterator {
+public:
+  //! Category of the iterator.
+  using iterator_category = std::input_iterator_tag;
+  //! Type iterated over.
+  using value_type = Int;
+  //! Type for distance between iterators.
+  using difference_type = std::ptrdiff_t;
+  //! Pointer to `value_type`.
+  using pointer = value_type *;
+  //! Type returned by the dereference operator.
+  using reference = value_type;
+
+  // QG: roi-adaptive
+    iterator(
+      const TensorMultilevelCoefficientAdpQuantizer &quantizer,
+      const typename ShuffledTensorNodeRange<N, Real>::iterator &inner_node,
+      Real const *const inner_coeff, Real const *const coeff_map);
+
+  //! Equality comparison.
+  bool operator==(const iterator &other) const;
+
+  //! Inequality comparison.
+  bool operator!=(const iterator &other) const;
+
+  //! Preincrement.
+  iterator &operator++();
+
+  //! Postincrement.
+  iterator operator++(int);
+
+  //! Dereference.
+  reference operator*() const;
+
+private:
+  //! Associated multilevel coefficient quantizer;
+  const TensorMultilevelCoefficientAdpQuantizer &quantizer;
 
   //! Iterator to current node.
   typename ShuffledTensorNodeRange<N, Real>::iterator inner_node;
@@ -235,12 +322,6 @@ public:
       const TensorMultilevelCoefficientDequantizer &dequantizer,
       const typename ShuffledTensorNodeRange<N, Real>::iterator &inner_node,
       const It inner_coeff);
-
-  // QG: adaptive
-  iterator(
-      const TensorMultilevelCoefficientDequantizer &dequantizer,
-      const typename ShuffledTensorNodeRange<N, Real>::iterator &inner_node,
-      const It inner_coeff, Real const *const coeff_map);
 
   //! Equality comparison.
   bool operator==(const iterator &other) const;

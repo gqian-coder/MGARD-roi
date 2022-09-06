@@ -29,6 +29,13 @@ void quantize(const TensorMeshHierarchy<N, Real> &hierarchy,
               const pb::Header &header, const Real s, const Real tolerance,
               Real const *const coefficients, void *const quantized);
 
+// QG adaptive
+template <std::size_t N, typename Real>
+void quantize_roi(const TensorMeshHierarchy<N, Real> &hierarchy,
+              const pb::Header &header, const Real s, const Real tolerance, 
+              const size_t scalar, const Real *cmap,
+              Real const *const coefficients, void *const quantized);
+
 //! Dequantize an array of quantized multilevel coefficients.
 //!
 //! `quantized` must have the correct alignment for an object of the
