@@ -23,7 +23,7 @@ void hist_blc_coord(std::vector<cube_<T>> &blc_set /*top left coord*/,
 }
 
 template <typename T>
-size_t blc_coord_gb(std::vector<cube_<T>> &c_blc, std::vector<cube_<T>>p_blc, 
+size_t blc_coord_gb(std::vector<cube_<int>> &c_blc, std::vector<cube_<int>>p_blc, 
                     size_t nblc, std::vector<cube_<T>> bin_w, size_t depth)
 {
     size_t k=0, r, c, h;
@@ -72,8 +72,8 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 
 // return the id of blocks whose coefficients sum are large and expand the block boundary
 template <typename T1, typename T2>
-void filter_hist_blc(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, std::vector<cube_<T2>> &blc_set, 
-                    std::vector<cube_<T2>> &filtered_set, const T1 thresh, cube_<T2> bin_w, size_t &nbins)
+void filter_hist_blc(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, std::vector<cube_<int>> &blc_set, 
+                    std::vector<cube_<int>> &filtered_set, const T1 thresh, cube_<T2> bin_w, size_t &nbins)
 {
 //  std::cout << "number of bins: " << nbins << "\n";
     std::vector<T1>hist_w (nbins, 0);
@@ -272,10 +272,10 @@ void dfs_amr_2d(std::vector<struct cube_ <T2>> blc_set, const T1 *u_mc, customiz
         nbin.c = (T2) std::ceil((float)prev_bin.c / bin_w[depth].c);
         nbin.h = (T2) std::ceil((float)prev_bin.h / bin_w[depth].h);
         size_t nblc = nbin.r*nbin.c*nbin.h;
-        std::vector<struct cube_<T2>> child_set(nblc);
+        std::vector<struct cube_<int>> child_set(nblc);
         hist_blc_coord<T2>(child_set, nbin, bin_w[depth], init_pos);
         int n_filtered = (int)std::ceil(thresh*nblc);
-        std::vector<struct cube_<T2>> filtered_set(n_filtered);
+        std::vector<struct cube_<int>> filtered_set(n_filtered);
         filter_hist_blc<T1, T2>(u_mc, c_hierarchy, child_set, filtered_set, thresh[depth], bin_w[depth], nblc);
         if (depth==bin_w.size()-1){
             for (int cid=0; cid<nblc; cid++) {
@@ -328,13 +328,15 @@ void dfs_amr_2d(std::vector<struct cube_ <T2>> blc_set, const T1 *u_mc, customiz
 }
 
 template <typename T1, typename T2>
-bool buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<T2> pos,
-                const size_t rad)
+bool buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> pos,
+                const int rad)
 {
-    size_t rr, cc, hh, r00, c00;
+    int rr, cc, hh;
+    size_t r00, c00;
+    size_t delta_r, delta_c, delta_h;
     struct cube_<size_t> epa_min, epa_max;
     size_t dim2 = c_hierarchy.Col*c_hierarchy.Height;
-    epa_min.r = (pos.r-rad > 0) ? (pos.r-rad) : 0;
+    epa_min.r = (pos.r-rad>0) ? (pos.r-rad) : 0;
     epa_max.r = (pos.r+rad+1<c_hierarchy.Row) ? (pos.r+rad+1) : c_hierarchy.Row;
     epa_min.c = (pos.c-rad>0) ? (pos.c-rad) : 0;
     epa_max.c = (pos.c+rad+1<c_hierarchy.Col) ? (pos.c+rad+1) : c_hierarchy.Col;
@@ -342,10 +344,13 @@ bool buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_
     epa_max.h = (pos.h+rad+1<c_hierarchy.Height) ? (pos.h+rad+1) : c_hierarchy.Height;
     for (rr=epa_min.r; rr<epa_max.r; rr++) {
         r00 = rr*dim2;
+        delta_r = std::abs(rr - pos.r);
         for (cc=epa_min.c; cc<epa_max.c; cc++) {
             c00 = cc*c_hierarchy.Height;
+            delta_c = std::abs(cc - pos.c);
             for (hh=epa_min.h; hh<epa_max.h; hh++) {
-                if (u_map[r00+c00+hh]==0) 
+                delta_h = std::abs(hh - pos.h);
+                if ((delta_r+delta_c+delta_h<=rad) && (u_map[r00+c00+hh]==ROI)) 
                     return true;
             }
         }
@@ -369,24 +374,22 @@ void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::v
     nr = (size_t)std::ceil((float)bin_w[0].r / bin_w[depth].r);
     nc = (size_t)std::ceil((float)bin_w[0].c / bin_w[depth].c);
     nh = (size_t)std::ceil((float)bin_w[0].h / bin_w[depth].h);
-    std::vector<struct cube_<T2>> child_blc(nr*nc*nh);
-    std::vector<struct cube_<T2>> parent_blc(nr*nc*nh);
-//    std::cout << "max child bins: " << nr*nc*nh << "\n";
+    std::vector<struct cube_<int>> child_blc(nr*nc*nh);
+    std::vector<struct cube_<int>> parent_blc(nr*nc*nh);
     
     // mesh refinement
     size_t n_pblc = 1;
-    struct cube_<T2> blc_min, blc_max, epa_min, epa_max;
+    struct cube_<int> blc_min, blc_max, epa_min, epa_max;
     for (size_t d=0; d<depth; d++) {
-//        std::cout << "depth..." << d << "\n";
         n_pblc = blc_coord_gb<T2>(child_blc, parent_blc, n_pblc, bin_w, d+1);
-//        std::cout << n_pblc << " bins remain...\n";
         filter_hist_blc<T1, T2>(u_mc, c_hierarchy, child_blc, parent_blc, thresh[d], bin_w[d+1], n_pblc);
     } // parent_blc contains the filtered blocks
-    std::cout << "final bins..." << n_pblc << "\n";
+//    std::cout << "final bins..." << n_pblc << "\n";
     
     // RoI expansion  
     size_t dim2 = (size_t)c_hierarchy.Col * c_hierarchy.Height;
-    size_t r0, c0, r00, c00, rr, cc, hh, k, l, rad, epa_h;
+    size_t r0, c0, r00, c00,  k, l, epa_h;
+    int rad, rr, cc, hh;
     for (size_t i=0; i<n_pblc; i++) {
         blc_min = parent_blc[i];
         blc_max.r = blc_min.r + bin_w[depth].r;
@@ -394,31 +397,30 @@ void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::v
         blc_max.h = blc_min.h + bin_w[depth].h; 
 //        std::cout << "blc_min.r = " << blc_min.r << ", .c = " << blc_min.c << ", .h = " << blc_min.h << "\n";
 //        std::cout << "blc_max.r = " << blc_max.r << ", .c = " << blc_max.c << ", .h = " << blc_max.h << "\n";
-        for (size_t r=blc_min.r; r<blc_max.r; r++) {
+        for (int r=blc_min.r; r<blc_max.r; r++) {
             r0 = r*dim2; 
-            for (size_t c=blc_min.c; c<blc_max.c; c++) {
+            for (int c=blc_min.c; c<blc_max.c; c++) {
                 c0 = c*c_hierarchy.Height;
-                for (size_t h=blc_min.h; h<blc_max.h; h++) {
-                    k = r0 + c0 +h;
+                for (int h=blc_min.h; h<blc_max.h; h++) {
+                    k = r0 + c0 + h;
                     l = c_hierarchy.level[k];
-                    if (u_map[k]==BACKGROUND) { 
-                        rad  = static_cast<size_t>(1<<(c_hierarchy.L - l));
+                    if (l>=c_hierarchy.l_th) { 
+                        rad  = static_cast<int>(1<<(c_hierarchy.L - l));
                         epa_min.r = (r-rad > 0) ? (r-rad) : 0;
                         epa_max.r = (r+rad+1<c_hierarchy.Row) ? (r+rad+1) : c_hierarchy.Row;
                         epa_min.c = (c-rad>0) ? c-rad : 0;
                         epa_max.c = (c+rad+1<c_hierarchy.Col) ? (c+rad+1) : c_hierarchy.Col;
                         epa_min.h = (h-rad>0) ? h-rad : 0;
-                        epa_max.h = (h+rad<c_hierarchy.Height) ? h+rad : c_hierarchy.Height;
+                        epa_max.h = (h+rad+1<c_hierarchy.Height) ? h+rad+1 : c_hierarchy.Height;
                         epa_h     = epa_max.h - epa_min.h;
-//                        std::cout << "epa.r = " << epa_max.r-epa_min.r << ", .c = " << epa_max.c-epa_min.c << ", .h = " << epa_h << "\n";
                         for (rr=epa_min.r; rr<epa_max.r; rr++) {
                             r00 = rr*dim2;
                             for (cc=epa_min.c; cc<epa_max.c; cc++) {
                                 c00 = cc*c_hierarchy.Height;
                                 memset(&u_map[r00+c00+epa_min.h], 0, epa_h * sizeof(T1));
                             }
-                        } 
-                    }
+                        }
+                    } 
                 }
             }
         } 
@@ -434,8 +436,8 @@ void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::v
                 l = c_hierarchy.level[k];
                 if (u_map[k]==BACKGROUND) {
                     rad = R2[l-c_hierarchy.l_th];                     
-                    struct cube_<size_t> pos_ = {r, c, h}; 
-                    if(buffer_zone(c_hierarchy, u_map, pos_, rad)) 
+                    struct cube_<int> pos_ = {r, c, h}; 
+                    if(buffer_zone<T1, T2>(c_hierarchy, u_map, pos_, (int)rad)) 
                         u_map[k]=BUFFER_ZONE;
                 }
             }

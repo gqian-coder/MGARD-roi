@@ -34,8 +34,8 @@ template <typename T>
 std::vector<size_t> sort_indexes(const std::vector<T> &v);
 
 template <typename T1, typename T2>
-void filter_hist_blc(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, std::vector<cube_<T2>> &blc_set,
-                    std::vector<cube_<T2>> &filtered_set, const T1 thresh, cube_<T2> bin_w, size_t &nbins);
+void filter_hist_blc(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, std::vector<cube_<int>> &blc_set,
+                    std::vector<cube_<int>> &filtered_set, const T1 thresh, cube_<T2> bin_w, size_t &nbins);
 
 template <typename T1, typename T2>
 void check_nearby_lgc(customized_hierarchy <T2> &c_hierarchy, T1 *u_map,
@@ -60,12 +60,12 @@ void dfs_amr_2d(std::vector<struct cube_ <T2>> blc_set, const T1 *u_mc, customiz
             const std::vector<size_t> R2);
 
 template <typename T>
-size_t blc_coord_gb(std::vector<cube_<T>> &c_blc, std::vector<cube_<T>>p_blc,
+size_t blc_coord_gb(std::vector<cube_<int>> &c_blc, std::vector<cube_<int>>p_blc,
                     size_t nblc, std::vector<cube_<T>> bin_w, size_t depth);
 
 template <typename T1, typename T2>
-bool buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<T2> pos,
-                const size_t rad);
+bool buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> pos,
+                const int rad);
 
 template <typename T1, typename T2>
 void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::vector<T1> thresh,
