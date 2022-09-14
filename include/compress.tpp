@@ -182,7 +182,8 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
     for (int i=0; i<thresh.size()+1; i++) { 
         std::cout << "bin_w[" << i << "].r: " << bin_w[i].r << ", .c: " << bin_w[i].c << ", .h: " << bin_w[i].h << "\n";  
     }
-    size_t max_rad = (size_t)(2 * (1<<(c_hierarchy.L - c_hierarchy.l_th+1))); // 2nd peak to the 0th center
+    double factor_ = (N==3) ? 2.5 : 2.0;
+    size_t max_rad = (size_t)(factor_ * (double)(1<<(c_hierarchy.L - c_hierarchy.l_th+1))); // 2nd peak to the 0th center
     std::vector<size_t>R2(c_hierarchy.L-c_hierarchy.l_th+1);
     R2.at(0) = max_rad;
     std::cout << "max_rad = " << max_rad << "\n";
@@ -208,7 +209,7 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
 // 3rd peak, scalar=125 for 2D if nodal nodal and scalar=50 if nodal coefficient vertical
 //  1D case: scalar = 22 for d=2h  (0.634 * w^2), w=0.268
 //  2D case: scalar = 23 for d=2h  (0.5915 * w^2)
-  size_t scalar = 23; 
+  size_t scalar = (N==3) ? 90 : 23; 
 
   MemoryBuffer<unsigned char> quantized = quantization_buffer(header, ndof);
   quantize_roi(hierarchy, header, s, tolerance, scalar, unshuffled_u, u, quantized.data.get());
