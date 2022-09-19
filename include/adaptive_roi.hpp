@@ -67,7 +67,7 @@ template <typename T1, typename T2>
 bool buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> pos,
                 const int rad);
 
-template <typename T1, typename T2>
+template <size_t N, typename T1, typename T2>
 void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::vector<T1> thresh,
             std::vector<cube_<T2>> bin_w, T1* u_map, const std::vector<size_t> R2);
 } // namespace mgard

@@ -16,6 +16,7 @@
 #include <numeric>
 #include <type_traits>
 #include <vector>
+#include <time.h>       /* clock_t, clock, CLOCKS_PER_SEC */
 
 #include "MGARDConfig.hpp"
 #include "TensorMultilevelCoefficientQuantizer.hpp"
@@ -89,6 +90,8 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
              const std::vector<size_t> init_bw, const std::vector<size_t> bw_ratio,  
              const size_t l_th, const char* filename, bool wr /*1 for write 0 for read*/) 
 {
+  clock_t start, end;
+  start = clock();
   const std::size_t ndof = hierarchy.ndof();
   Real *const u = new Real[ndof];
   shuffle(hierarchy, v, u);
@@ -96,7 +99,10 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
   populate_defaults(header);
   hierarchy.populate(header);
   decompose(hierarchy, header, u);
+  end = clock();
+  printf ("decompose takes %f seconds.\n",((float)(end-start))/CLOCKS_PER_SEC);
 
+  start = clock();
   // QG: create a map for adaptive compression
   Real *const unshuffled_u = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
   unshuffle(hierarchy, u, unshuffled_u);
@@ -194,7 +200,12 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
 //    std::vector<struct cube_<size_t>>init_set(1, {0,0,0}); 
     // depth first search for hierachical block refinement
 //  int depth = 1;
-    amr_gb<Real, size_t>(unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
+    end = clock();
+    printf ("RoI preparation takes %f seconds.\n",((float)(end-start))/CLOCKS_PER_SEC);
+    start = clock();
+    amr_gb<N, Real, size_t>(unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
+    end = clock();
+    printf ("RoI selection + buffer zone take %f seconds.\n",((float)(end-start))/CLOCKS_PER_SEC);
 //  dfs_amr<Real, size_t>(init_set, unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
     if (filename != NULL) {
         FILE *fp = fopen (filename, "wb");
