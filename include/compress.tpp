@@ -17,6 +17,7 @@
 #include <type_traits>
 #include <vector>
 #include <time.h>       /* clock_t, clock, CLOCKS_PER_SEC */
+#include <mpi.h>
 
 #include "MGARDConfig.hpp"
 #include "TensorMultilevelCoefficientQuantizer.hpp"
@@ -90,8 +91,8 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
              const std::vector<size_t> init_bw, const std::vector<size_t> bw_ratio,  
              const size_t l_th, const char* filename, bool wr /*1 for write 0 for read*/) 
 {
-  clock_t start, end;
-  start = clock();
+  double start, end;
+  start = MPI_Wtime();
   const std::size_t ndof = hierarchy.ndof();
   Real *const u = new Real[ndof];
   shuffle(hierarchy, v, u);
@@ -99,15 +100,8 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
   populate_defaults(header);
   hierarchy.populate(header);
   decompose(hierarchy, header, u);
-  end = clock();
-  printf ("decompose takes %f seconds.\n",((float)(end-start))/CLOCKS_PER_SEC);
-
-  start = clock();
-  // QG: create a map for adaptive compression
-  Real *const unshuffled_u = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
-  unshuffle(hierarchy, u, unshuffled_u);
-  const std::array<std::size_t, N> &SHAPE = hierarchy.shapes.back();
-  Real* u_map = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
+  end = MPI_Wtime(); 
+  printf ("decompose takes %f seconds.\n", end-start);
 
   {
     pb::ErrorControl &e = *header.mutable_error_control();
@@ -120,10 +114,17 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
     }
     e.set_tolerance(tolerance);
   }
+  start = MPI_Wtime();
+  // QG: create a map for adaptive compression
+  Real *const unshuffled_u = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
+  unshuffle(hierarchy, u, unshuffled_u);
+  const std::array<std::size_t, N> &SHAPE = hierarchy.shapes.back();
+  Real* u_map = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
 
   if ((wr==0) && (filename!=NULL)) { // load from existing map files
     FILE *file = fopen(filename, "rb");
     fread(u_map, sizeof(Real), ndof, file);
+    fclose(file);
   } else {
     int Dim2, r, c, h;
     struct customized_hierarchy <size_t> c_hierarchy;
@@ -185,42 +186,50 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
         bin_w[i].c = (size_t) std::ceil((float)bin_w[i-1].c / bw_ratio[i-2]);
         bin_w[i].h = (size_t) std::ceil((float)bin_w[i-1].h / bw_ratio[i-2]);
     }
-    for (int i=0; i<thresh.size()+1; i++) { 
-        std::cout << "bin_w[" << i << "].r: " << bin_w[i].r << ", .c: " << bin_w[i].c << ", .h: " << bin_w[i].h << "\n";  
-    }
+//    for (int i=0; i<thresh.size()+1; i++) { 
+//        std::cout << "bin_w[" << i << "].r: " << bin_w[i].r << ", .c: " << bin_w[i].c << ", .h: " << bin_w[i].h << "\n";  
+//    }
     double factor_ = (N==3) ? 2.5 : 2.0;
     size_t max_rad = (size_t)(factor_ * (double)(1<<(c_hierarchy.L - c_hierarchy.l_th+1))); // 2nd peak to the 0th center
     std::vector<size_t>R2(c_hierarchy.L-c_hierarchy.l_th+1);
     R2.at(0) = max_rad;
-    std::cout << "max_rad = " << max_rad << "\n";
+//    std::cout << "max_rad = " << max_rad << "\n";
     for (int i=1; i<c_hierarchy.L-c_hierarchy.l_th+1; i++) {
         R2.at(i) = R2.at(i-1) / 2;
-        std::cout << "R[" << i << "] = " << R2.at(i) << "\n";  
+//        std::cout << "R[" << i << "] = " << R2.at(i) << "\n";  
     }
 //    std::vector<struct cube_<size_t>>init_set(1, {0,0,0}); 
     // depth first search for hierachical block refinement
 //  int depth = 1;
-    end = clock();
-    printf ("RoI preparation takes %f seconds.\n",((float)(end-start))/CLOCKS_PER_SEC);
-    start = clock();
+//    end = clock();
+//    printf ("RoI preparation takes %f seconds.\n",((float)(end-start))/CLOCKS_PER_SEC);
+    start = MPI_Wtime(); 
     amr_gb<N, Real, size_t>(unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
-    end = clock();
-    printf ("RoI selection + buffer zone take %f seconds.\n",((float)(end-start))/CLOCKS_PER_SEC);
+    end = MPI_Wtime();
+    printf ("RoI selection + buffer zone take %f seconds.\n", end-start);
 //  dfs_amr<Real, size_t>(init_set, unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
+    size_t cnt_bz = 0, cnt_roi=0;
     if (filename != NULL) {
         FILE *fp = fopen (filename, "wb");
         fwrite (u_map , sizeof(Real), ndof, fp);
         fclose(fp);
     }
+    for (size_t i=0; i<ndof; i++) {
+      if (u_map[i]==BUFFER_ZONE) cnt_bz ++;
+      else if (u_map[i]==ROI) cnt_roi ++;
+    }
+    std::cout << "percentage of bz " << (float)cnt_bz / (float)ndof * 100.0 << "% out of " << (float)cnt_roi / (float)ndof * 100.0 << "% roi\n";
+    shuffle(hierarchy, u_map, unshuffled_u);
   }
-  shuffle(hierarchy, u_map, unshuffled_u);
+  end = MPI_Wtime();
+  printf ("roi-adaptive takes %f seconds.\n", end-start);
 
 // QG: scalar of eb used for coefficients in non-RoI : RoI
 // 2D case is bounded by the horizontal direction of coefficient_nodal error propagation
 // 3rd peak, scalar=125 for 2D if nodal nodal and scalar=50 if nodal coefficient vertical
 //  1D case: scalar = 22 for d=2h  (0.634 * w^2), w=0.268
 //  2D case: scalar = 23 for d=2h  (0.5915 * w^2)
-  size_t scalar = (N==3) ? 90 : 23; 
+  size_t scalar = (N==3) ? 45 : 23; 
 
   MemoryBuffer<unsigned char> quantized = quantization_buffer(header, ndof);
   quantize_roi(hierarchy, header, s, tolerance, scalar, unshuffled_u, u, quantized.data.get());
