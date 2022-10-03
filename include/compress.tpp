@@ -118,9 +118,12 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
   // QG: create a map for adaptive compression
   Real *const unshuffled_u = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
   unshuffle(hierarchy, u, unshuffled_u);
+//  end = MPI_Wtime();
+//  printf ("unshuffle takes %f seconds.\n", end-start);
   const std::array<std::size_t, N> &SHAPE = hierarchy.shapes.back();
   Real* u_map = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
 
+  start = MPI_Wtime();
   if ((wr==0) && (filename!=NULL)) { // load from existing map files
     FILE *file = fopen(filename, "rb");
     fread(u_map, sizeof(Real), ndof, file);
@@ -201,12 +204,10 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
 //    std::vector<struct cube_<size_t>>init_set(1, {0,0,0}); 
     // depth first search for hierachical block refinement
 //  int depth = 1;
-//    end = clock();
-//    printf ("RoI preparation takes %f seconds.\n",((float)(end-start))/CLOCKS_PER_SEC);
-    start = MPI_Wtime(); 
+//    start = MPI_Wtime(); 
     amr_gb<N, Real, size_t>(unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
     end = MPI_Wtime();
-    printf ("RoI selection + buffer zone take %f seconds.\n", end-start);
+//    printf ("RoI selection + buffer zone take %f seconds.\n", end-start);
 //  dfs_amr<Real, size_t>(init_set, unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
     size_t cnt_bz = 0, cnt_roi=0;
     if (filename != NULL) {
@@ -221,9 +222,7 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
     std::cout << "percentage of bz " << (float)cnt_bz / (float)ndof * 100.0 << "% out of " << (float)cnt_roi / (float)ndof * 100.0 << "% roi\n";
     shuffle(hierarchy, u_map, unshuffled_u);
   }
-  end = MPI_Wtime();
   printf ("roi-adaptive takes %f seconds.\n", end-start);
-
 // QG: scalar of eb used for coefficients in non-RoI : RoI
 // 2D case is bounded by the horizontal direction of coefficient_nodal error propagation
 // 3rd peak, scalar=125 for 2D if nodal nodal and scalar=50 if nodal coefficient vertical
