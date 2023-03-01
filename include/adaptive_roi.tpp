@@ -71,13 +71,26 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 
 #define Alpha 1.414
 
+template <typename T1> 
+struct KVal {
+    T1 key;
+    size_t val;
+};
+
+template <typename T1>
+struct greater1{
+  bool operator()(const struct KVal<T1>& a,const struct KVal<T1>& b) const{
+    return a.key<b.key;
+  }
+};
+
 // return the id of blocks whose coefficients sum are large and expand the block boundary
 template <typename T1, typename T2>
 void filter_hist_blc(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, std::vector<cube_<int>> &blc_set, 
                     std::vector<cube_<int>> &filtered_set, const T1 thresh, cube_<T2> bin_w, size_t &nbins)
 {
 //  std::cout << "number of bins: " << nbins << "\n";
-    std::vector<T1>hist_w (nbins, 0);
+    std::vector<struct KVal<T1>> hist_w (nbins);
     size_t dim2 = c_hierarchy.Col * c_hierarchy.Height;
     size_t k;
     T1 area, r1, c1, h1;
@@ -102,6 +115,8 @@ void filter_hist_blc(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, std
         } else {
             area = area * bin_w.h;
         }
+        hist_w[i].key = 0;
+        hist_w[i].val = i;
         for (T2 r=blc_set.at(i).r; r<r1; r++) {
             T2 r0 = r*dim2;
             for (T2 c=blc_set.at(i).c; c<c1; c++) {
@@ -110,33 +125,40 @@ void filter_hist_blc(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, std
                     k = r0+c0+h;
                     T2 l = c_hierarchy.level[k];
                     if (l>0) {
-                        hist_w[i] += std::abs(u_mc[k]);// / factor;
+                        hist_w[i].key += std::abs(u_mc[k]);// / factor;
                     }
 //                    if (l<c_hierarchy.l_th)
-//                        hist_w[i] += std::abs(u_mc[k]) / std::pow(Alpha, c_hierarchy.L-l);
+//                        hist_w[i].key += std::abs(u_mc[k]) / std::pow(Alpha, c_hierarchy.L-l);
                 }
             }
         } 
         // normalize to remove the edge effect
-        hist_w[i] = hist_w[i] / area;
+        hist_w[i].key = hist_w[i].key / area;
     }
-    std::vector<size_t> sid_umc = sort_indexes<T1>(hist_w);
-    nbins = (size_t)std::ceil(thresh*nbins); 
-    for (int i=0; i<nbins; i++) {
-        filtered_set.at(i) = blc_set.at(sid_umc.at(i));
-    }
+
+    nbins = (size_t)std::ceil(thresh*nbins);
+    std::make_heap(hist_w.begin(), hist_w.end(), greater1<T1>());
+    for (size_t i=0; i<nbins; i++) {
+        filtered_set.at(i) = blc_set.at(hist_w.front().val);
+        pop_heap(hist_w.begin(), hist_w.end(), greater1<T1>());
+        hist_w.pop_back();
+    }   
+//    std::vector<size_t> sid_umc = sort_indexes<T1>(hist_w);
+//    for (int i=0; i<nbins; i++) {
+//        filtered_set.at(i) = blc_set.at(sid_umc.at(i));
+//    }
 }
 
 
-template <typename T1, typename T2>
+template <size_t N, typename T1, typename T2>
 void set_buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> roi_min,
                 struct cube_<int> roi_max, struct cube_<int> bz_min, struct cube_<int> bz_max,
-                const int lr, const int ndim)
+                const int lr)
 {
     size_t l, k, delta, lth;
     lth = c_hierarchy.L-lr;
     // separate the buffer zone memset into 4 (2D) or 6 (3D) regions
-    if (ndim==2) {
+    if (N==2) {
         // top region
         delta = bz_max.c - bz_min.c;
         for (int r=bz_min.r; r<roi_min.r; r++) {
@@ -196,17 +218,20 @@ void set_buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct c
                 }
             }
         }
-    } else if (ndim==3) {
+    } else if (N==3) {
         // top region
         delta = bz_max.h - bz_min.h; 
         size_t dim2 = c_hierarchy.Col * c_hierarchy.Height; 
         size_t rr;
+        size_t thresh = c_hierarchy.Height*c_hierarchy.Col*c_hierarchy.Row;
         for (int r=bz_min.r; r<roi_min.r; r++) {
             rr = r*dim2;
             for (int c=bz_min.c; c<bz_max.c; c++) {
                 k = rr+c*c_hierarchy.Height + bz_min.h;
+//                if ((k>thresh) || (delta>thresh))
+//                    std::cout << "invalid top...roi.r: " << roi_max.r << ", " << roi_min.r << ", roi.c: " << roi_max.c << ", " << roi_min.c << ", roi.h: " << roi_max.h << ", " << roi_min.h << ", bz.r: " << bz_max.r << ", " << bz_min.r << ", bz.c: " << bz_max.c << ", " << bz_min.c << ", bz.h: " << bz_max.h << ", " << bz_min.h << ", lr: " << "\n";
                 if (lr==0) {
-                   memset(&u_map[k], 0, sizeof(T1)*delta); 
+                    memset(&u_map[k], 0, sizeof(T1)*delta); 
                 } else {
                    T2 *p_l = &c_hierarchy.level[k]; 
                    T1 *p_umap = &u_map[k];
@@ -240,7 +265,7 @@ void set_buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct c
             for (int c=bz_min.c; c<bz_max.c; c++) {
                 k = rr+c*c_hierarchy.Height+bz_min.h;
                 if (lr==0) {
-                   memset(&u_map[k], 0, sizeof(T1)*delta);
+                    memset(&u_map[k], 0, sizeof(T1)*delta);
                 } else {
                     T2 *p_l = &c_hierarchy.level[k];
                     T1 *p_umap = &u_map[k];
@@ -406,42 +431,392 @@ void set_buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct c
     }
 }
 
+
+template <typename T1, typename T2>
+void set_buffer_zone_bw1_2d(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> roi_min, 
+                struct cube_<int> roi_max, struct cube_<int> bz_min, struct cube_<int> bz_max,
+                const int lr, const int rad)
+{
+    size_t l, k, d, delta, lth;
+    lth = c_hierarchy.L-lr;
+    // separate the buffer zone memset into 4 (2D) or 6 (3D) regions
+    if (lr==0) {
+        delta = 1; 
+        d     = roi_min.c;
+        for (int r=bz_min.r; r<=roi_min.r; r++) {
+            k = r*c_hierarchy.Col + d;
+            memset(&u_map[k], 0, sizeof(T1)*delta);
+            d--;
+            delta += 2;
+        } // d = bz_min.c; delta = 2*rad+1
+        for (int r=roi_min.r+1; r<bz_max.r; r++) {
+            k = r*c_hierarchy.Col + d;
+            memset(&u_map[k], 0, sizeof(T1)*delta);    
+            d ++;
+            delta -= 2;
+        } 
+    } else {
+        // top & bottom region
+        int c1 = roi_min.c+rad;;
+        int c2 = c1+1;
+        int rtop = bz_min.r;
+        int rbot = bz_max.r-1;
+        size_t k1, k2;
+        while (rtop<=roi_min.r) {
+            k1 = rtop*c_hierarchy.Col+c1;
+            k2 = rbot*c_hierarchy.Col+c1;
+            for (int c=c1; c<c2; c++) {
+                if (c_hierarchy.level[k1] <= lth) u_map[k1] = 0;
+                k1 ++;
+                if (c_hierarchy.level[k2] <= lth) u_map[k2] = 0;
+                k2 ++;
+            }
+            c1--;
+            c2++;
+            rtop ++;
+            rbot --;
+        }
+        // middle top region
+        c1 = roi_min.c-1;
+        c2 = roi_min.c+rad+1; 
+        for (int r=roi_min.r+1; r<roi_min.r+rad; r++) {
+            k  = r * c_hierarchy.Col;
+            k1 = k+c1;
+            k2 = k+c2;
+            for (d=k1; d<k1+rad; d++) {
+                if (c_hierarchy.level[d] <= lth) u_map[d] = 0;
+            }
+            for (d=k2; d<k2+rad; d++) {
+                if (c_hierarchy.level[d] <= lth) u_map[d] = 0;
+            }
+            c1 --;
+            c2 ++;
+        } 
+        // middle bottom region
+        c1 = bz_min.c;
+        c2 = roi_max.c;
+        for (int r=roi_min.r+rad; r<roi_max.r; r++) {
+            k  = r * c_hierarchy.Col;
+            k1 = k + c1;
+            k2 = k + c2;
+            for (d=k1; d<k1+rad; d++) {
+                if (c_hierarchy.level[d] <= lth) u_map[d] = 0;
+            }
+            for (d=k2; d<k2+rad; d++) {
+                if (c_hierarchy.level[d] <= lth) u_map[d] = 0;
+            }
+            c1 ++;
+            c2 --;
+        } 
+    } 
+}
+
+template <typename T1, typename T2>
+void set_buffer_zone_bw1_3d(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> roi_min,
+                struct cube_<int> roi_max, struct cube_<int> bz_min, struct cube_<int> bz_max,
+                const int lr, const int rad) 
+{
+    size_t l, k, delta, lth, rr;
+    lth = c_hierarchy.L-lr;
+    size_t dim2 = c_hierarchy.Col * c_hierarchy.Height;
+    if (lr==0) {
+        delta = 1;
+        int h = roi_min.h;
+        for (int r=bz_min.r; r<roi_min.r; r++) {
+            rr = r*dim2;
+            delta += 2;
+            h --;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height + h;
+                memset(&u_map[k], 0, sizeof(T1)*delta);
+            }
+//            std::cout << "delta = " << delta << "\n";
+        } // h = bz_max.h
+        rr = roi_min.r*dim2;
+        for (int c=bz_min.c; c<bz_max.c; c++) {
+            k = rr+c*c_hierarchy.Height + h ;
+            memset(&u_map[k], 0, sizeof(T1)*delta);
+        }
+        for (int r=roi_min.r+1; r<bz_max.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height + h;
+                memset(&u_map[k], 0, sizeof(T1)*delta);
+            }
+            delta -= 2;
+            h ++;
+        }
+/*        delta = bz_max.h - bz_min.h;
+        for (int r=bz_min.r; r<bz_max.r; r++) {
+            rr = r*dim2;
+            k = rr+bz_min.c*c_hierarchy.Height + bz_min.h;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                memset(&u_map[k], 0, sizeof(T1)*delta);
+                k += c_hierarchy.Height;
+            }
+        }*/
+    } else {
+        // top region
+        delta = bz_max.h - bz_min.h;
+        size_t dim2 = c_hierarchy.Col * c_hierarchy.Height;
+        size_t rr;
+        for (int r=bz_min.r; r<roi_min.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height + bz_min.h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+        // bottom region
+        for (int r=roi_max.r; r<bz_max.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height+bz_min.h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                         *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+        // left region
+        delta = roi_min.h - bz_min.h;
+        for (int r=roi_min.r; r<roi_max.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height+bz_min.h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+        // right region
+        delta = bz_max.h - roi_max.h;
+        for (int r=roi_min.r; r<roi_max.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height+roi_max.h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+        // back region
+        delta = roi_max.h - roi_min.h;
+        for (int r=roi_min.r; r<roi_max.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<roi_min.c; c++) {
+                k = rr+c*c_hierarchy.Height+roi_min.h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+        // front region
+        for (int r=roi_min.r; r<roi_max.r; r++) {
+            rr = r*dim2;
+            for (int c=roi_max.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height+roi_min.h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+    }
+/*
+        // top region
+        size_t dim2 = c_hierarchy.Col * c_hierarchy.Height;
+        size_t rr;
+        int h = roi_min.h;
+        delta = roi_max.h - roi_min.h;
+        for (int r=bz_min.r; r<roi_min.r; r++) {
+            rr = r*dim2;
+            delta += 2;
+            h --;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height + h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+//        std::cout << "after top, h = " << h << ", bz_min.h = " << bz_min.h << ", delta = " << delta << "\n";
+        // bottom region
+        for (int r=roi_max.r+1; r<bz_max.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height + h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+            delta -= 2;
+            h ++;
+        }
+        // left region
+        delta = roi_min.h - bz_min.h;
+        h = bz_min.h;
+        for (int r=roi_min.r; r<=roi_max.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height + h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+        // right region
+        delta = bz_max.h - roi_max.h;
+        h = roi_max.h;
+        for (int r=roi_min.r; r<=roi_max.r; r++) {
+            rr = r*dim2;
+            for (int c=bz_min.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height+h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+        // back region
+        delta = roi_max.h - roi_min.h;; 
+        h = roi_min.h; 
+        for (int r=roi_min.r; r<roi_max.r; r++) {
+            rr = r*dim2;
+            delta += 2;
+            h --;
+            for (int c=bz_min.c; c<roi_min.c; c++) {
+                k = rr+c*c_hierarchy.Height+h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+        // front region
+        for (int r=roi_min.r; r<roi_max.r; r++) {
+            rr = r*dim2;
+            delta -= 2;
+            h++;
+            for (int c=roi_max.c; c<bz_max.c; c++) {
+                k = rr+c*c_hierarchy.Height+h;
+                T2 *p_l = &c_hierarchy.level[k];
+                T1 *p_umap = &u_map[k];
+                for (size_t d=0; d<delta; d++) {
+                    if ((*p_l) <= lth) {
+                        *p_umap = 0;
+                    }
+                    p_l++;
+                    p_umap++;
+                }
+            }
+        }
+    }*/
+}
+
+
 // bin_w: [{Row, Col, Height}, ...], size == depth+1
 //        minimally bin_w will have two levels
 // depth: thresh.size()
 template <size_t N, typename T1, typename T2>
 void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::vector<T1> thresh, 
-            const std::vector<cube_<T2>> bin_w, T1* u_map, const std::vector<size_t> R2)
+            const std::vector<cube_<T2>> bin_w, T1* u_map)
 {
-    float factor_ = (N==3) ? 2.5 : 2;
+    clock_t start, end;
+    float duration_bz=0.0;
+    float factor_ = 2;
     size_t depth = thresh.size(); 
-    // initialize parent blocks (maximal #)
+    // initialize parent, children blocks (maximal #)
     size_t nr = (size_t)std::ceil((float)bin_w[0].r / bin_w[depth].r);
     size_t nc = (size_t)std::ceil((float)bin_w[0].c / bin_w[depth].c);
     size_t nh = (size_t)std::ceil((float)bin_w[0].h / bin_w[depth].h);
-    // initialize children blocks (maximal #)
-    nr = (size_t)std::ceil((float)bin_w[0].r / bin_w[depth].r);
-    nc = (size_t)std::ceil((float)bin_w[0].c / bin_w[depth].c);
-    nh = (size_t)std::ceil((float)bin_w[0].h / bin_w[depth].h);
     std::vector<struct cube_<int>> child_blc(nr*nc*nh);
     std::vector<struct cube_<int>> parent_blc(nr*nc*nh);
     
     // mesh refinement
     size_t n_pblc = 1;
     struct cube_<int> blc_min, blc_max, epa_min, epa_max, bz_min, bz_max;
+    start = clock();
     for (size_t d=0; d<depth; d++) {
         n_pblc = blc_coord_gb<T2>(child_blc, parent_blc, n_pblc, bin_w, d+1);
         filter_hist_blc<T1, T2>(u_mc, c_hierarchy, child_blc, parent_blc, thresh[d], bin_w[d+1], n_pblc);
     } // parent_blc contains the filtered blocks
+    end = clock();
+    duration_bz = ((float)(end-start))/CLOCKS_PER_SEC;
+    std::cout << "AMR takes " << duration_bz << " seconds\n";
 //    std::cout << "final bins..." << n_pblc << "\n";
     
     // RoI expansion  
     size_t dim2 = (size_t)c_hierarchy.Col * c_hierarchy.Height;
     size_t r0, c0, r00, c00,  k, l, epa_h;
     int rad, rr, cc, hh;
-//    clock_t start, end;
-//    float duration_bz=0.0;
+
 //    std::cout << "number of roi blocks: " << n_pblc << "\n";
+    size_t nest_r = c_hierarchy.L - c_hierarchy.l_th + 1;
     for (size_t i=0; i<n_pblc; i++) {
         blc_min = parent_blc[i];
         blc_max.r = blc_min.r + bin_w[depth].r;
@@ -468,7 +843,6 @@ void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::v
         epa_max = blc_max;
         // buffer zone search
 //        start =clock();
-        size_t nest_r = c_hierarchy.L - c_hierarchy.l_th + 1;
         rad = 0;
         for (int lr=0; lr < nest_r; lr ++) {
             rad      = (int)(factor_ * (double)(1<<(lr+1)) - rad);
@@ -478,7 +852,7 @@ void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::v
             bz_max.c = (epa_max.c+rad+1 < c_hierarchy.Col) ? (epa_max.c+rad+1) : c_hierarchy.Col;
             bz_min.h = (epa_min.h - rad>0) ? (epa_min.h-rad) : 0;
             bz_max.h = (epa_max.h+rad+1 < c_hierarchy.Height) ? (epa_max.h+rad+1) : c_hierarchy.Height;
-            set_buffer_zone<T1, T2>(c_hierarchy, u_map, epa_min, epa_max, bz_min, bz_max, lr, N);
+            set_buffer_zone<N, T1, T2>(c_hierarchy, u_map, epa_min, epa_max, bz_min, bz_max, lr);
             epa_min  = bz_min;
             epa_max  = bz_max;
         }
@@ -487,6 +861,118 @@ void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::v
     }
 //    std::cout << "buffer zone search takes " << duration_bz << " seconds\n";
 }
+
+template <size_t N, typename T1, typename T2>
+void amr_gb_bw1(std::vector<T1> u_mc, customized_hierarchy <T2> &c_hierarchy, const T1 thresh,
+            const std::vector<cube_<T2>> bin_w, T1* u_map)
+{
+    float factor_ = 2;
+    size_t n_pblc = bin_w[0].r*bin_w[0].c*bin_w[0].h;
+    // initialize children blocks (maximal #)
+    std::vector<struct cube_<int>> amr_blc(n_pblc);
+
+    // mesh refinement
+    clock_t start, end;
+    float duration_bz=0.0;
+    struct cube_<int> blc_min, blc_max, bz_min, bz_max;
+//    start = clock();
+//    std::vector<size_t> sid_umc = sort_indexes<T1>(u_mc);
+    std::vector<struct KVal<T1>> hist_w(n_pblc);
+    for (size_t i=0; i<n_pblc; i++) {
+        hist_w[i].val = i;
+        hist_w[i].key = u_mc[i];
+    } 
+    std::make_heap(hist_w.begin(), hist_w.end(), greater1<T1>());
+    n_pblc = (size_t)std::ceil(thresh*n_pblc);
+//    std::cout << "n_pblc: " << n_pblc << "\n";
+    std::vector<size_t> sid_umc(n_pblc);
+    for (size_t i=0; i<n_pblc; i++) {
+        sid_umc.at(i) = hist_w.front().val;
+//        std::cout << sid_umc.at(i) << "\n";
+        pop_heap(hist_w.begin(), hist_w.end(), greater1<T1>());
+        hist_w.pop_back();
+    }
+//    end = clock();
+    hist_w.clear();
+//    duration_bz += ((float)(end-start))/CLOCKS_PER_SEC;
+//    std::cout << "sorting takes " << duration_bz << " seconds\n";
+    size_t r, c, h, k;
+    size_t dim2 = (size_t)c_hierarchy.Col * c_hierarchy.Height; 
+    for (int i=0; i<n_pblc; i++) {
+        k = sid_umc.at(i);
+        amr_blc.at(i).r = (int) std::floor((float)k / (float)dim2);
+        amr_blc.at(i).c = (int) std::floor((float)(k-dim2*amr_blc.at(i).r) / (float)c_hierarchy.Height);
+        amr_blc.at(i).h = k - amr_blc.at(i).r*dim2 - amr_blc.at(i).c*c_hierarchy.Height; 
+    }
+//    std::cout << "final bins..." << n_pblc << "\n";
+    sid_umc.clear();
+
+    // non RoI expansion
+    size_t r0, c0, r00, c00, l, epa_h;
+    int rad, rr, cc, hh;
+    size_t nest_r = c_hierarchy.L - c_hierarchy.l_th + 1;
+//    size_t l7_cnt = 0;
+    for (size_t i=0; i<n_pblc; i++) {
+        blc_min   = amr_blc[i];
+        blc_max.r = (amr_blc[i].r+1 < c_hierarchy.Row) ? amr_blc[i].r+1: c_hierarchy.Row ;
+        blc_max.c = (amr_blc[i].c+1 < c_hierarchy.Col) ? amr_blc[i].c+1 : c_hierarchy.Col;
+        blc_max.h = (amr_blc[i].h+1 < c_hierarchy.Height) ? amr_blc[i].h+1 : c_hierarchy.Height;
+        // buffer zone search
+//        start =clock();
+        rad = 0;
+        for (int lr=0; lr < nest_r; lr ++) {
+            rad  = (int)(factor_ * (double)(1<<(lr+1)) - rad);
+//            std::cout << "rad = " << rad << "\n";
+            bool edge = false;
+            if (blc_min.r-rad>0) {
+                bz_min.r = blc_min.r-rad; 
+            } else { 
+                bz_min.r = 0; edge = true;
+            } 
+            if (blc_max.r+rad < c_hierarchy.Row) {
+                bz_max.r = blc_max.r+rad;
+            } else {
+                bz_max.r = c_hierarchy.Row; edge = true;
+            } 
+            if (blc_min.c-rad>0) {
+                bz_min.c = blc_min.c-rad;
+            } else {
+                bz_min.c = 0; edge = true;
+            }
+            if (blc_max.c+rad < c_hierarchy.Col) {
+                bz_max.c = blc_max.c+rad;
+            } else {
+                bz_max.c = c_hierarchy.Col; edge = true;
+            }
+            if (blc_min.h-rad>0) {
+                bz_min.h = blc_min.h-rad;
+            } else {
+                bz_min.h = 0; edge = true;
+            }
+            if (blc_max.h+rad < c_hierarchy.Height) {
+                bz_max.h = blc_max.h+rad;
+            } else {
+                bz_max.h = c_hierarchy.Height; edge = true;
+            }
+//            std::cout << "min: " << bz_min.r << "," << bz_min.c << ", " << bz_min.h << ", max: " << bz_max.r << ", " << bz_max.c << ", " << bz_max.h << "\n";
+            if (edge) {
+                set_buffer_zone<N, T1, T2>(c_hierarchy, u_map, blc_min, blc_max, bz_min, bz_max, lr);
+            } else {
+                if (N==2) {
+                    set_buffer_zone_bw1_2d<T1, T2>(c_hierarchy, u_map, blc_min, blc_max, bz_min, bz_max, lr, rad);
+                } else if (N==3) {
+                    set_buffer_zone_bw1_3d<T1, T2>(c_hierarchy, u_map, blc_min, blc_max, bz_min, bz_max, lr, rad);
+                }
+            }
+            blc_min  = bz_min;
+            blc_max  = bz_max;
+        }
+//        end = clock();
+//        duration_bz += ((float)(end-start))/CLOCKS_PER_SEC;
+    }
+//    std::cout << "buffer zone search takes " << duration_bz << " seconds\n";
+}
+
 /*
 // for each point in RoI, expand buffer zone by its level, then search for buffer zone
 template <size_t N, typename T1, typename T2>

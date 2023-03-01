@@ -47,7 +47,27 @@ bool buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_
 
 template <size_t N, typename T1, typename T2>
 void amr_gb(const T1 *u_mc, customized_hierarchy <T2> &c_hierarchy, const std::vector<T1> thresh,
-            std::vector<cube_<T2>> bin_w, T1* u_map, const std::vector<size_t> R2);
+            std::vector<cube_<T2>> bin_w, T1* u_map);
+
+template <size_t N, typename T1, typename T2>
+void amr_gb_bw1(std::vector<T1> u_mc, customized_hierarchy <T2> &c_hierarchy, const T1 thresh,
+            const std::vector<cube_<T2>> bin_w, T1* u_map);
+
+template <typename T1, typename T2>
+void set_buffer_zone_bw1_3d(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> roi_min,
+                struct cube_<int> roi_max, struct cube_<int> bz_min, struct cube_<int> bz_max,
+                const int lr, const int rad);
+
+template <typename T1, typename T2>
+void set_buffer_zone_bw1_2d(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> roi_min,
+                struct cube_<int> roi_max, struct cube_<int> bz_min, struct cube_<int> bz_max,
+                const int lr, const int rad);
+
+template <size_t N, typename T1, typename T2>
+void set_buffer_zone(customized_hierarchy <T2> &c_hierarchy, T1* u_map, struct cube_<int> roi_min,
+                struct cube_<int> roi_max, struct cube_<int> bz_min, struct cube_<int> bz_max,
+                const int lr);
+
 } // namespace mgard
 #include "adaptive_roi.tpp"
 #endif

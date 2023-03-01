@@ -116,19 +116,21 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
   }
   start = MPI_Wtime();
   // QG: create a map for adaptive compression
-  Real *const unshuffled_u = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
-  unshuffle(hierarchy, u, unshuffled_u);
+//  Real *const unshuffled_u = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
+  std::vector<Real> unshuffled_u(ndof); 
+  unshuffle(hierarchy, u, unshuffled_u.data());
 //  end = MPI_Wtime();
 //  printf ("unshuffle takes %f seconds.\n", end-start);
   const std::array<std::size_t, N> &SHAPE = hierarchy.shapes.back();
   Real* u_map = static_cast<Real *>(std::malloc(ndof * sizeof(Real)));
 
-  start = MPI_Wtime();
   if ((wr==0) && (filename!=NULL)) { // load from existing map files
     FILE *file = fopen(filename, "rb");
     fread(u_map, sizeof(Real), ndof, file);
     fclose(file);
+    std::cout << "load umap from file..." << filename << "\n"; 
   } else {
+    start = MPI_Wtime();
     int Dim2, r, c, h;
     struct customized_hierarchy <size_t> c_hierarchy;
     c_hierarchy.level = new size_t[ndof];
@@ -152,31 +154,36 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
     }
     Dim2 = c_hierarchy.Height * c_hierarchy.Col;
     // QG: get the level of each node (can be improved)
-    for (std::size_t i=0; i<ndof; i++) {
-        std::array<std::size_t, N> multiindex;
-        if (N==1) {
-            multiindex[0] = i;
-        } else if (N==2) {
-            r = int(i/c_hierarchy.Col);
-            c = i - r*c_hierarchy.Col;
+    size_t k;
+    std::array<std::size_t, N> multiindex;
+    if (N==1) {
+        for (std::size_t r=0; r<SHAPE[0]; r++) {
             multiindex[0] = r;
-            multiindex[1] = c;
-        } else if (N==3){
-            r = (int)(i / Dim2);
-            c = (int)((i - r*Dim2) / c_hierarchy.Height);
-            h = (i - r*Dim2) % c_hierarchy.Height;
-            multiindex[0] = r;
-            multiindex[1] = c;
-            multiindex[2] = h;
+            c_hierarchy.level[r] = hierarchy.date_of_birth(multiindex);
+            u_map[r] = (c_hierarchy.level[r]<l_th) ? BUFFER_ZONE : BACKGROUND;
         }
-        c_hierarchy.level[i] = hierarchy.date_of_birth(multiindex);
-        // preserve coefficients w/ level < l_thresh w/ higher accuracy  
-        if (c_hierarchy.level[i]<l_th) {
-            u_map[i] = BUFFER_ZONE;
-        } else {
-            u_map[i] = BACKGROUND;
+    } else if (N==2) {
+        for (std::size_t r=0; r<SHAPE[0]; r++) {
+            for (std::size_t c=0; c<SHAPE[1]; c++) {
+                k = r*SHAPE[1] + c;
+                multiindex[0] = r; multiindex[1] = c;
+                c_hierarchy.level[k] = hierarchy.date_of_birth(multiindex);
+                u_map[k] = (c_hierarchy.level[k]<l_th) ? BUFFER_ZONE : BACKGROUND;
+            }
+        }
+    } else if (N==3) {
+        for (std::size_t r=0; r<SHAPE[0]; r++) {
+            for (std::size_t c=0; c<SHAPE[1]; c++) {
+                for (std::size_t h=0; h<SHAPE[2]; h++) {
+                    k = r*Dim2 + c*SHAPE[0] + h;
+                    multiindex[0] = r; multiindex[1] = c; multiindex[2] = h;
+                    c_hierarchy.level[k] = hierarchy.date_of_birth(multiindex);
+                    u_map[k] = (c_hierarchy.level[k]<l_th) ? BUFFER_ZONE : BACKGROUND;
+                }
+            }
         }
     }
+
     c_hierarchy.l_th = l_th;
     // number of bins in the 1st layer of histogram
     struct std::vector<cube_<size_t>> bin_w(thresh.size()+1);
@@ -189,49 +196,41 @@ compress_roi(const TensorMeshHierarchy<N, Real> &hierarchy, Real *const v, const
         bin_w[i].c = (size_t) std::ceil((float)bin_w[i-1].c / bw_ratio[i-2]);
         bin_w[i].h = (size_t) std::ceil((float)bin_w[i-1].h / bw_ratio[i-2]);
     }
-//    for (int i=0; i<thresh.size()+1; i++) { 
-//        std::cout << "bin_w[" << i << "].r: " << bin_w[i].r << ", .c: " << bin_w[i].c << ", .h: " << bin_w[i].h << "\n";  
-//    }
-    double factor_ = (N==3) ? 2.5 : 2.0;
-    size_t max_rad = (size_t)(factor_ * (double)(1<<(c_hierarchy.L - c_hierarchy.l_th+1))); // 2nd peak to the 0th center
-    std::vector<size_t>R2(c_hierarchy.L-c_hierarchy.l_th+1);
-    R2.at(0) = max_rad;
-//    std::cout << "max_rad = " << max_rad << "\n";
-    for (int i=1; i<c_hierarchy.L-c_hierarchy.l_th+1; i++) {
-        R2.at(i) = R2.at(i-1) / 2;
-//        std::cout << "R[" << i << "] = " << R2.at(i) << "\n";  
-    }
-//    std::vector<struct cube_<size_t>>init_set(1, {0,0,0}); 
+
     // depth first search for hierachical block refinement
-//  int depth = 1;
 //    start = MPI_Wtime(); 
-    amr_gb<N, Real, size_t>(unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
+    if ((thresh.size()==1) && (bin_w[1].r*bin_w[1].c*bin_w[1].h==1)) {
+        amr_gb_bw1<N, Real, size_t>(unshuffled_u, c_hierarchy, thresh.at(0), bin_w, u_map);
+    } else { 
+        amr_gb<N, Real, size_t>(unshuffled_u.data(), c_hierarchy, thresh, bin_w, u_map);
+//        amr_gb_recursion<N, Real, size_t>(unshuffled_u.data(), c_hierarchy, thresh, bin_w, u_map);
+    }
     end = MPI_Wtime();
+    printf ("roi-adaptive takes %f seconds.\n", end-start);
 //    printf ("RoI selection + buffer zone take %f seconds.\n", end-start);
-//  dfs_amr<Real, size_t>(init_set, unshuffled_u, c_hierarchy, thresh, bin_w, u_map, R2);
-    size_t cnt_bz = 0, cnt_roi=0;
     if (filename != NULL) {
         FILE *fp = fopen (filename, "wb");
         fwrite (u_map , sizeof(Real), ndof, fp);
         fclose(fp);
     }
-    for (size_t i=0; i<ndof; i++) {
-      if (u_map[i]==BUFFER_ZONE) cnt_bz ++;
-      else if (u_map[i]==ROI) cnt_roi ++;
-    }
-    std::cout << "percentage of bz " << (float)cnt_bz / (float)ndof * 100.0 << "% out of " << (float)cnt_roi / (float)ndof * 100.0 << "% roi\n";
-    shuffle(hierarchy, u_map, unshuffled_u);
   }
-  printf ("roi-adaptive takes %f seconds.\n", end-start);
+  size_t cnt_bz = 0, cnt_roi=0;
+  for (size_t i=0; i<ndof; i++) {
+    if (u_map[i]==BUFFER_ZONE) cnt_bz ++;
+    else if (u_map[i]==ROI) cnt_roi ++;
+  }
+  std::cout << "percentage of bz " << (float)cnt_bz / (float)ndof * 100.0 << "% out of " << (float)cnt_roi / (float)ndof * 100.0 << "% roi\n";
+  shuffle(hierarchy, u_map, unshuffled_u.data());
+  
 // QG: scalar of eb used for coefficients in non-RoI : RoI
 // 2D case is bounded by the horizontal direction of coefficient_nodal error propagation
 // 3rd peak, scalar=125 for 2D if nodal nodal and scalar=50 if nodal coefficient vertical
 //  1D case: scalar = 22 for d=2h  (0.634 * w^2), w=0.268
 //  2D case: scalar = 23 for d=2h  (0.5915 * w^2)
-  size_t scalar = (N==3) ? 45 : 23; 
+  size_t scalar = (N==3) ? 25 : 23; // 20 
 
   MemoryBuffer<unsigned char> quantized = quantization_buffer(header, ndof);
-  quantize_roi(hierarchy, header, s, tolerance, scalar, unshuffled_u, u, quantized.data.get());
+  quantize_roi(hierarchy, header, s, tolerance, scalar, unshuffled_u.data(), u, quantized.data.get());
   MemoryBuffer<unsigned char> buffer =
       compress(header, quantized.data.get(), quantized.size);
   delete[] u;
